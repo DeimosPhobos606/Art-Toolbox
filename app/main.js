@@ -3,7 +3,7 @@ import {SCRATCH,createScratch,demoOBJ} from "./scratch.js";
 const $=id=>document.getElementById(id), status=t=>$("status").textContent=t;
 import {getTooltipPreference,setTooltipPreference,installTooltips} from "./tooltips.js?v=022";
 let ws,scratch=null,free=false,projectId=null,tab="toolbox",frames=new Map(),busy=false;
-const tools={palette:"tools/Palette_Workspace_0.3.html?v=022",baker:"tools/Baker_Workspace_1.7.html?v=022",material:"tools/Material_Workspace_0.1.html?v=022"};
+const tools={palette:"tools/Palette_Workspace_0.3.html?v=022",baker:"tools/Baker_Workspace_2.0.html?v=030",material:"tools/Material_Workspace_0.2.html?v=030"};
 const guard=fn=>async(...args)=>{try{await fn(...args)}catch(e){status("Ошибка: "+e.message)}};
 function btn(text,fn,active=false){let b=document.createElement("button");b.textContent=text;b.classList.toggle("active",active);b.onclick=guard(fn);return b;}
 function active(){return free?null:ws.state.assets.find(a=>a.id===ws.state.active);}

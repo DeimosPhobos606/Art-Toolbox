@@ -2,11 +2,13 @@
 
 ## [Открыть Art Toolbox — актуальная версия](https://deimosphobos606.github.io/Art-Toolbox/workspace.html)
 
-**Art Toolbox 0.2 Beta** — единая рабочая среда для игровых ассетов: Asset Library, Palette Lab, Texture Baker и Material Lab.
+**Art Toolbox 0.2.1 Beta** — единая рабочая среда для игровых ассетов: Asset Library, Palette Lab, Texture Baker и Material Lab.
 
 Прямой адрес: https://deimosphobos606.github.io/Art-Toolbox/workspace.html
 
 [Старая автономная версия](https://deimosphobos606.github.io/Art-Toolbox/)
+
+Инструменты доступны без создания ассета. В свободном режиме демонстрационные и импортированные ресурсы общие между вкладками, но хранятся только до перезагрузки страницы.
 
 Проекты сохраняются локально в браузере. Яндекс Диск пока не подключён. Для переноса и резервного копирования ассетов используется формат `.artasset`.
 

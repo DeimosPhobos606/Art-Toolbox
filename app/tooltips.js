@@ -1,0 +1,17 @@
+const KEY="art-toolbox.showTooltips";
+let fallback=true;
+export function getTooltipPreference(){try{let v=localStorage.getItem(KEY);return v===null?fallback:v==="true";}catch{return fallback;}}
+export function setTooltipPreference(v){fallback=!!v;try{localStorage.setItem(KEY,String(fallback));}catch{}}
+export function installTooltips(dictionary={}){
+ const tip=document.createElement("div");tip.id="at-tooltip";tip.setAttribute("role","tooltip");tip.hidden=true;tip.style.cssText="position:fixed;z-index:2147483647;pointer-events:none;max-width:min(290px,calc(100vw - 16px));padding:8px 11px;border:1px solid #535c66;border-radius:6px;background:#14171c;color:#e6e9ed;font:12px/1.45 system-ui,sans-serif;box-shadow:0 5px 20px #0006;white-space:normal;overflow-wrap:anywhere;";document.body.append(tip);
+ let timer=null,target=null,x=0,y=0,text="";
+ function hide(){clearTimeout(timer);timer=null;target=null;tip.hidden=true;tip.style.display="none";}
+ function enabled(){try{if(window.parent!==window&&typeof window.parent.artTooltipsEnabled==="function")return window.parent.artTooltipsEnabled();}catch{}return getTooltipPreference();}
+ function locate(el){if(!el?.closest)return null;let direct=el.closest("[data-tooltip]");if(direct)return {el:direct,text:direct.dataset.tooltip};let control=el.closest("input,select,button,summary,[id]");if(control&&dictionary[control.id])return {el:control,text:dictionary[control.id]};let label=el.closest("label");if(label){let c=label.control||label.querySelector("input,select,button")||label.nextElementSibling;if(c&&dictionary[c.id])return {el:c,text:dictionary[c.id]};}return null;}
+ function position(){let w=tip.offsetWidth,h=tip.offsetHeight;tip.style.left=Math.max(8,Math.min(innerWidth-w-8,x+14))+"px";tip.style.top=Math.max(8,Math.min(innerHeight-h-8,y+18))+"px";}
+ function move(e){if(e.pointerType==="touch"||e.buttons||!enabled()){hide();return;}x=e.clientX;y=e.clientY;let match=locate(e.target);if(!match||!match.text){hide();return;}if(match.el===target&&match.text===text){if(!tip.hidden)position();return;}hide();target=match.el;text=match.text;timer=setTimeout(()=>{if(!enabled()||!target?.isConnected||document.hidden){hide();return;}tip.textContent=text;tip.hidden=false;tip.style.display="block";position();},2000);}
+ document.addEventListener("pointermove",move,true);document.addEventListener("pointerdown",hide,true);document.addEventListener("pointercancel",hide,true);document.addEventListener("pointerout",e=>{if(!e.relatedTarget)hide();else{let match=locate(e.relatedTarget);if(!match||match.el!==target)hide();}},true);
+ document.addEventListener("scroll",hide,true);document.addEventListener("visibilitychange",hide);window.addEventListener("blur",hide);window.addEventListener("storage",e=>{if(e.key===KEY)hide();});document.addEventListener("keydown",hide,true);window.toolTooltipRefresh=hide;
+ function clean(root){if(root.nodeType!==1)return;if(root.hasAttribute("title")&&!["IFRAME","SVG"].includes(root.tagName)){if(!root.dataset.tooltip)root.dataset.tooltip=root.getAttribute("title");root.removeAttribute("title");}root.querySelectorAll?.("[title]:not(iframe):not(svg)").forEach(el=>{if(!el.dataset.tooltip)el.dataset.tooltip=el.getAttribute("title");el.removeAttribute("title");});}
+ clean(document.body);new MutationObserver(records=>{for(let r of records)if(r.type==="attributes")clean(r.target);else for(let n of r.addedNodes)clean(n);}).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:["title"]});hide();return hide;
+}

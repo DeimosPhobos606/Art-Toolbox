@@ -273,22 +273,23 @@ $('export').onclick=()=>{update(current);download(current)};$('exportAll').oncli
 const api=connect("baker");
 if(api){
  const bar=document.createElement("div");bar.className="command";let pub=document.createElement("button"),msg=document.createElement("span");pub.textContent="Сохранить карты в проект";bar.append(pub,msg);document.body.insertBefore(bar,document.querySelector("main"));
- let meshRev="",ready=false,loading=false,bakeState=null;
+ let meshRev="",ready=false,loading=false,bakeState=null,saveTask=Promise.resolve(),initTask;
  const fail=e=>{msg.textContent="Не сохранено: "+e.message;status(e.message)};
  const fields=["res","backend","pad","aa","sameMesh","normalMode","samples","radius","aoFalloff","bias","curvMode","curvSamples","curvRadius","curvFalloff","ignoreMirror","contactRadius","contactStrength","hardWidth","hardStrength","hardThreshold","geoCreases","geoAngle","smoothRelax","hybridRays","rayCoverage","adaptiveAngle","rayRecovery",...maps.map(([k])=>"bake_"+k)];
  const readFields=()=>Object.fromEntries(fields.map(k=>[k,$(k).type==="checkbox"?$(k).checked:$(k).value]));
  const saver=debounceSave(()=>api.save({version:1,engine:"1.7",meshRev,settings:structuredClone(settings),fields:readFields(),current,preview,view:{yaw,pitch,zoom,target:[...target]}}),fail);
  function schedule(){if(ready&&!loading)saver.schedule();}
- window.toolFlush=async()=>{if(worker)throw Error("Запекание выполняется. Заверши или отмени его перед переключением.");await saver.flush();};
+ window.toolFlush=async()=>{await initTask;if(worker)throw Error("Запекание выполняется. Заверши или отмени его перед переключением.");await saveTask;await saver.flush();};
  async function refresh(){if(loading)return;loading=true;try{let r=api.list().find(r=>r.slot==="mesh");if(r&&r.id+":"+r.revision!==meshRev){if(worker)throw Error("Запекание выполняется");let f=fileFrom(await api.get(r.id)),m=f.name.toLowerCase().endsWith(".obj")?obj(await f.text()):glb(await f.arrayBuffer());changeMesh(m,f.name);meshRev=r.id+":"+r.revision;let saved=await api.session();if(saved.bakeState?.meshRev===meshRev&&saved.engine==="1.7"){let d=saved.bakeState;raw=d.raw;contexts=d.contexts;curvParts=d.curvParts;curvCoverage=d.curvCoverage;for(let [k] of maps)update(k,false);show();}}}finally{loading=false;}}
  window.toolRefresh=refresh;
  const originalUpdate=update;update=function(...args){originalUpdate(...args);schedule();};
  document.addEventListener("change",schedule);document.addEventListener("pointerup",schedule);
- window.saveBakeToWorkspace=async()=>{if(!ready||!meshRev)return;try{let snapshot={meshRev,raw,contexts,curvParts,curvCoverage};await api.save({version:1,engine:"1.7",bakeState:snapshot});await saver.flush();msg.textContent="Исходные карты сохранены";}catch(e){fail(e);throw e;}};
+ window.saveBakeToWorkspace=()=>{if(!ready||!meshRev)return Promise.resolve();let snapshot={meshRev,raw:{...raw},contexts:{...contexts},curvParts,curvCoverage};saveTask=saveTask.catch(()=>{}).then(async()=>{await api.save({version:1,engine:"1.7",bakeState:snapshot});await saver.flush();msg.textContent="Исходные карты сохранены";}).catch(e=>{fail(e);throw e;});saveTask.catch(()=>{});return saveTask;};
  $("file").onchange=async()=>{try{let f=$("file").files[0];if(f){let m=f.name.toLowerCase().endsWith(".obj")?obj(await f.text()):glb(await f.arrayBuffer());await api.put("mesh",f,{name:f.name,kind:"mesh"});await refresh();schedule();}}catch(e){fail(e)}$("file").value="";};
  $("demo").onclick=()=>{msg.textContent="Demo доступна в отдельной версии; в проекте используется сохранённая модель."};
  pub.onclick=async()=>{try{if(!meshRev)throw Error("Сначала импортируй модель");if(!Object.keys(raw).length)throw Error("Сначала запеки карты");for(let [k] of maps)if(raw[k]){update(k,false);await api.put("bake:"+k,await canvasBlob(outputs[k]),{name:({normal:"World_Normal",curv:"Curvature",ao:"AO",light:"Direct_Light"}[k])+".png",kind:"texture",meta:{engine:"1.7",meshRev,settings:structuredClone(settings[k])}});}await window.saveBakeToWorkspace();msg.textContent="Карты добавлены в библиотеку";}catch(e){fail(e)}};
- (async()=>{try{let s=await api.session();if(s.version===1){if(s.settings)for(let [k] of maps)Object.assign(settings[k],s.settings[k]||{});for(let [k,v] of Object.entries(s.fields||{})){let el=$(k);if(el){if(el.type==="checkbox")el.checked=!!v;else el.value=v;}}curvModeUI();}await refresh();if(s.current&&maps.some(m=>m[0]===s.current))selectMap(s.current);if(s.view){yaw=s.view.yaw;pitch=s.view.pitch;zoom=s.view.zoom;target=s.view.target||[0,0,0];}if(s.preview)setPreview(s.preview);ready=true;schedule();}catch(e){ready=true;fail(e)}})();
+ const oldBake=bake;bake=function(...args){if(!ready||!meshRev){msg.textContent="Сначала импортируй модель в ассет";return;}oldBake(...args);};
+ initTask=(async()=>{try{let s=await api.session();if(s.version===1){if(s.settings)for(let [k] of maps)Object.assign(settings[k],s.settings[k]||{});for(let [k,v] of Object.entries(s.fields||{})){let el=$(k);if(el){if(el.type==="checkbox")el.checked=!!v;else el.value=v;}}curvModeUI();}await refresh();if(s.current&&maps.some(m=>m[0]===s.current))selectMap(s.current);if(s.view){yaw=s.view.yaw;pitch=s.view.pitch;zoom=s.view.zoom;target=s.view.target||[0,0,0];}if(s.preview)setPreview(s.preview);ready=true;schedule();}catch(e){ready=true;fail(e)}})();
 }
 
 </script></body></html>

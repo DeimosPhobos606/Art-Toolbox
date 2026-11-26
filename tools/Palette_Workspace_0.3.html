@@ -14,12 +14,12 @@ function shader(type,src){let s=gl.createShader(type);gl.shaderSource(s,src);gl.
 // Workspace adapter: source resource links + non-destructive palette settings.
 const api=connect("palette");
 if(api){
- let ready=false,meshRev="",sourceId=null,sourceRev="",loading=false;
+ let ready=false,meshRev="",sourceId=null,sourceRev="",loading=false,initTask;
  const bar=document.createElement("div");bar.style.cssText="display:flex;gap:6px;padding:5px 10px;align-items:center;background:#292d34;flex:none;flex-wrap:wrap";
  const pick=document.createElement("select"),grad=document.createElement("button"),out=document.createElement("button"),msg=document.createElement("span");grad.textContent="В проект: Gradient";out.textContent="В проект: Albedo";bar.append("Ресурс проекта",pick,grad,out,msg);document.body.insertBefore(bar,document.querySelector("main"));
  const fail=e=>{msg.textContent="Не сохранено: "+e.message;status(e.message)};
  const saver=debounceSave(()=>api.save({version:1,state:clone(state),sourceId,preview,display:$("display").value,light:$("light").value,view:{yaw,pitch,zoom}}),fail);
- window.toolFlush=async()=>{if(ready)await saver.flush();};
+ window.toolFlush=async()=>{await initTask;if(ready)await saver.flush();};
  function schedule(){if(ready&&!loading)saver.schedule();}
  const originalUpdate=update;update=function(...args){originalUpdate(...args);schedule();};
  const originalQueue=queueTexture;queueTexture=function(...args){originalQueue(...args);schedule();};
@@ -34,7 +34,7 @@ if(api){
  grad.onclick=async()=>{try{let c=document.createElement("canvas");c.width=1024;c.height=1;let ctx=c.getContext("2d");for(let x=0;x<c.width;x++){ctx.fillStyle=rgbHex(sample(x/(c.width-1)));ctx.fillRect(x,0,1,1);}await api.put("gradient:palette",await canvasBlob(c),{name:"Gradient.png",kind:"gradient",meta:{stops:sorted().map(({p,c})=>({p,c})),interp:state.interp,version:1}});await saver.flush();msg.textContent="Gradient сохранён";}catch(e){fail(e)}};
  out.onclick=async()=>{try{applyTexture();await api.put("palette:albedo",await canvasBlob(colored),{name:"Palette_Albedo.png",kind:"texture",meta:{sourceId,version:1}});await saver.flush();msg.textContent="Albedo сохранён";}catch(e){fail(e)}};
  document.addEventListener("change",schedule);document.addEventListener("pointerup",schedule);
- (async()=>{try{let s=await api.session();if(s.version===1&&s.state){restore(JSON.stringify(s.state));sourceId=s.sourceId||null;if(s.display)$("display").value=s.display;if(s.light!==undefined)$("light").value=s.light;await refresh();if(s.view)({yaw,pitch,zoom}=s.view);setPreview(s.preview==="3d"&&gl&&program?"3d":"2d");}else await refresh();ready=true;schedule();}catch(e){fail(e);ready=true;}})();
+ initTask=(async()=>{try{let s=await api.session();if(s.version===1&&s.state){restore(JSON.stringify(s.state));sourceId=s.sourceId||null;if(s.display)$("display").value=s.display;if(s.light!==undefined)$("light").value=s.light;await refresh();if(s.view)({yaw,pitch,zoom}=s.view);setPreview(s.preview==="3d"&&gl&&program?"3d":"2d");}else await refresh();ready=true;schedule();}catch(e){fail(e);ready=true;}})();
 }
 
 </script></body></html>

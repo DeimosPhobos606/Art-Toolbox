@@ -5,7 +5,7 @@ const panel=options.panel||canvas.parentElement, image=options.image, key=option
 const api=()=>{try{return window.parent!==window?window.parent.ArtToolbox:null}catch{return null}};
 const scope=()=>new URLSearchParams(location.search).get("asset")||"standalone";
 function cameraState(){return {yaw,pitch,zoom,target:[...target],projection};}
-function restoreCamera(s){if(!s||![s.yaw,s.pitch,s.zoom].every(Number.isFinite))return;yaw=s.yaw;pitch=clamp(s.pitch,-1.5707,1.5707);zoom=clamp(s.zoom,.12,30);target=Array.isArray(s.target)&&s.target.length===3&&s.target.every(Number.isFinite)?s.target.slice():[0,0,0];projection=s.projection==="ortho"?"ortho":"perspective";draw();}
+function restoreCamera(s){if(!s||![s.yaw,s.pitch,s.zoom].every(Number.isFinite))return;yaw=s.yaw;pitch=clamp(s.pitch,-1.5707,1.5707);zoom=clamp(s.zoom,.12,30);target=Array.isArray(s.target)&&s.target.length===3&&s.target.every(Number.isFinite)?s.target.slice():[0,0,0];projection=s.projection==="ortho"?"ortho":"perspective";if(proj)proj.value=projection;draw();}
 function share(){api()?.setCamera?.(scope(),meshKey,cameraState());}
 function syncCamera(){let s=api()?.getCamera?.(scope(),meshKey);if(s)restoreCamera(s);}
 function shader(type,src){let sh=gl.createShader(type);gl.shaderSource(sh,src);gl.compileShader(sh);if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(sh));return sh;}

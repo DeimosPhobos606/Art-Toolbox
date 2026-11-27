@@ -17,3 +17,5 @@
 @media(max-width:850px){.at-split[data-axis=x]{display:none}.at-view-toolbar{gap:2px}.at-view-toolbar button,.at-view-toolbar select{font-size:10px;padding:2px 4px}}
 
 .at-viewport>canvas:not(.at-uv-overlay){z-index:1}.at-viewport>canvas[hidden]{display:none!important}.at-viewport>.overlay,.at-viewport>.help{z-index:3}.at-viewport:focus-visible{outline:1px solid var(--at-accent)}.at-view-max>canvas{max-width:none;max-height:none}.at-split{align-self:stretch}.at-split[data-axis=y]{height:6px;margin:3px 0;width:100%}.at-split[data-axis=x]{width:5px}.at-viewport~.at-split[data-axis=y]{display:block}
+
+.at-vertical>.at-split{height:5px;width:100%;margin:0;display:block}.at-vertical>.view{border-left:0;border-top:1px solid #444}.at-vertical>.left,.at-vertical>.view{min-height:0}.at-vertical{grid-template-columns:1fr}.at-value-wrap{display:flex;gap:3px;align-items:center;min-width:0}.at-value-wrap input{min-width:0;flex:1}.at-value-wrap button{padding:2px 5px;min-height:22px}.at-split[data-axis=y]:focus-visible{outline:1px solid #9bc9b7}

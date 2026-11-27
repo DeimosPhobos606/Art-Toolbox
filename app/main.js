@@ -1,6 +1,6 @@
 import {Workspace} from "./core.js";
 import {SCRATCH,createScratch,demoOBJ,MemoryStore} from "./scratch.js";
-import {YandexDisk,tokenFromInput,snapshotName,encodeSnapshot,decodeSnapshot,validateSnapshot,captureWorkspace,replaceWorkspace} from "./cloud.js?v=040";
+import {YandexDisk,tokenFromInput,snapshotName,encodeSnapshot,decodeSnapshot,validateSnapshot,captureWorkspace,replaceWorkspace} from "./cloud.js?v=041";
 const $=id=>document.getElementById(id), status=t=>$("status").textContent=t;
 import {getTooltipPreference,setTooltipPreference,installTooltips} from "./tooltips.js?v=022";
 let ws,scratch=null,free=false,projectId=null,tab="toolbox",frames=new Map(),busy=false;
@@ -41,7 +41,7 @@ function initCloud(){
  $("cloudButton").onclick=()=>{$("cloudDialog").showModal();cloudControls();};
  $("cloudClose").onclick=()=>$("cloudDialog").close();$("cloudDialog").addEventListener("cancel",e=>{if(cloudBusy)e.preventDefault();});
  $("cloudAuthorize").onclick=()=>{let id=$("cloudClient").value.trim();if(!/^[a-zA-Z0-9_-]{12,128}$/.test(id)){cloudMsg("Введи Client ID приложения");return;}let u=new URL("https://oauth.yandex.ru/authorize");u.searchParams.set("response_type","token");u.searchParams.set("client_id",id);u.searchParams.set("redirect_uri","https://oauth.yandex.ru/verification_code");window.open(u.href,"_blank","noopener,noreferrer");};
- $("cloudConnect").onclick=()=>cloudRun(async()=>{let token=tokenFromInput($("cloudToken").value);$("cloudToken").value="";let candidate=new YandexDisk(token);cloudItems=await candidate.list();disk=candidate;await cloudList();cloudMsg("Яндекс Диск подключён · снимков: "+cloudItems.length);});
+ $("cloudConnect").onclick=()=>cloudRun(async()=>{let token=tokenFromInput($("cloudToken").value);let candidate=new YandexDisk(token);let items=await candidate.list();disk=candidate;cloudItems=items;$("cloudToken").value="";$("cloudSnapshots").replaceChildren(...cloudItems.map(x=>new Option(new Date(Number(x.name.split("-")[2])).toLocaleString()+" · "+(x.size/1048576).toFixed(1)+" MB",x.name)));cloudMsg("Яндекс Диск подключён · снимков: "+cloudItems.length);});
  $("cloudDisconnect").onclick=()=>{disk=null;cloudItems=[];$("cloudSnapshots").replaceChildren();$("cloudToken").value="";cloudMsg("Отключено");cloudControls();};
  $("cloudRefresh").onclick=()=>cloudRun(async()=>{await cloudList();cloudMsg("Список обновлён");});
  $("cloudUpload").onclick=()=>cloudRun(async()=>{cloudMsg("Подготовка снимка…");let blob=await makeSnapshot();cloudMsg("Загрузка "+(blob.size/1048576).toFixed(1)+" MB…");let name=snapshotName();await disk.upload(blob,name);await cloudList();$("cloudSnapshots").value=name;cloudMsg("Сохранено на Яндекс Диск · "+new Date().toLocaleTimeString());});

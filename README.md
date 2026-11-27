@@ -2,7 +2,7 @@
 
 ## [Открыть Art Toolbox — актуальная версия](https://deimosphobos606.github.io/Art-Toolbox/workspace.html)
 
-**Art Toolbox 0.3 Beta** — единая рабочая среда для игровых ассетов: Asset Library, Palette Lab, Texture Baker и Material Lab.
+**Art Toolbox 0.3.1 Beta** — единая рабочая среда для игровых ассетов: Asset Library, Palette Lab, Texture Baker и Material Lab.
 
 Прямой адрес: https://deimosphobos606.github.io/Art-Toolbox/workspace.html
 
@@ -27,3 +27,5 @@
 - Общий вьюпорт — после Яндекс Диска.
 
 Формат проектов не изменён. Карты предыдущих версий не пересчитываются автоматически.
+
+Texture Baker 2.0.1: connected-component curvature by default; optional Include disconnected surfaces. Contact Shadow and AO preserve separate-part interaction.

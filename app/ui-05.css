@@ -15,3 +15,5 @@
 .at-context-menu{position:fixed;z-index:99999;padding:5px;display:grid;gap:2px;background:#252930;border:1px solid #5d6671;border-radius:6px;box-shadow:0 8px 24px #0007;min-width:150px}
 .at-context-menu button{text-align:left;padding:6px 9px}
 @media(max-width:850px){.at-split[data-axis=x]{display:none}.at-view-toolbar{gap:2px}.at-view-toolbar button,.at-view-toolbar select{font-size:10px;padding:2px 4px}}
+
+.at-viewport>canvas:not(.at-uv-overlay){z-index:1}.at-viewport>canvas[hidden]{display:none!important}.at-viewport>.overlay,.at-viewport>.help{z-index:3}.at-viewport:focus-visible{outline:1px solid var(--at-accent)}.at-view-max>canvas{max-width:none;max-height:none}.at-split{align-self:stretch}.at-split[data-axis=y]{height:6px;margin:3px 0;width:100%}.at-split[data-axis=x]{width:5px}.at-viewport~.at-split[data-axis=y]{display:block}

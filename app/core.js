@@ -19,7 +19,7 @@ export class Workspace extends EventTarget{
  async addAsset(projectId,name){return this.transact(s=>{if(!s.projects.some(p=>p.id===projectId))throw Error("Project not found");let a={id:id(),projectId,name:name.trim()||"Asset",created:Date.now()};s.assets.push(a);s.active=a.id;return a;});}
  async activate(assetId){return this.transact(s=>{this.asset(s,assetId);s.active=assetId;});}
  list(assetId){return this.state.resources.filter(r=>r.assetId===assetId);}
- async put(assetId,slot,blob,opts={}){if(!(blob instanceof Blob))throw Error("Expected Blob");return this.transact((s,ops)=>{this.asset(s,assetId);let old=s.resources.find(r=>r.assetId===assetId&&r.slot===slot),r=nextResource(old,{assetId,slot,name:opts.name||slot,kind:opts.kind||"texture",meta:opts.meta||{}},id(),Date.now());s.resources=s.resources.filter(x=>x.id!==r.id);s.resources.push(r);ops.push({store:"blobs",key:r.id+":"+r.revision,value:blob});return r;});}
+ async put(assetId,slot,blob,opts={}){if(!blob||typeof blob.arrayBuffer!=="function"||typeof blob.size!=="number"||!["[object Blob]","[object File]"].includes(Object.prototype.toString.call(blob)))throw Error("Expected Blob");return this.transact((s,ops)=>{this.asset(s,assetId);let old=s.resources.find(r=>r.assetId===assetId&&r.slot===slot),r=nextResource(old,{assetId,slot,name:opts.name||slot,kind:opts.kind||"texture",meta:opts.meta||{}},id(),Date.now());s.resources=s.resources.filter(x=>x.id!==r.id);s.resources.push(r);ops.push({store:"blobs",key:r.id+":"+r.revision,value:blob});return r;});}
 
  async removeResource(assetId,resourceId){return this.transact(async(s,ops)=>{
   this.asset(s,assetId);let r=s.resources.find(x=>x.assetId===assetId&&x.id===resourceId);if(!r)throw Error("Ресурс не найден");
@@ -40,7 +40,7 @@ export class Workspace extends EventTarget{
  removeAssets(s,ops,ids){
   for(let r of s.resources.filter(r=>ids.has(r.assetId)))for(let i=1;i<=r.revision;i++)ops.push({store:"blobs",key:r.id+":"+i,remove:true});
   for(let a of ids)for(let tool of ["palette","baker","material"])ops.push({store:"sessions",key:a+":"+tool,remove:true});
-  s.resources=s.resources.filter(r=>!ids.has(r.assetId));s.assets=s.assets.filter(a=>!ids.has(a.id));if(ids.has(s.active))s.active=s.assets[0]?.id||null;
+  s.resources=s.resources.filter(r=>!ids.has(r.assetId));s.assets=s.assets.filter(a=>!ids.has(a.id));if(ids.has(s.active))s.active=s.assets.find(a=>!a.internal&&!a.id.startsWith("__at_"))?.id||null;
  }
  async get(assetId,resourceId,revision){await this.tail;let r=this.list(assetId).find(x=>x.id===resourceId);if(!r)throw Error("Resource not found");let blob=await this.store.read("blobs",r.id+":"+(revision||r.revision));if(!blob)throw Error("Missing resource file");return {resource:r,blob};}
  async session(assetId,tool){await this.tail;this.asset(this.state,assetId);return await this.store.read("sessions",assetId+":"+tool)||{};}

@@ -1,14 +1,14 @@
-import {Workspace} from "./core.js?v=0501";
-import {GLOBAL_PROJECT,GLOBAL_ASSET,isLibraryAsset,isLibraryProject,libraryAsset,ensureLibrary,libraryKind,copyResource} from "./library-05.js?v=0501";
-import {splitLayout,contextMenu} from "./layout-05.js?v=0501";
+import {Workspace} from "./core.js?v=0503";
+import {GLOBAL_PROJECT,GLOBAL_ASSET,isLibraryAsset,isLibraryProject,libraryAsset,ensureLibrary,libraryKind,copyResource} from "./library-05.js?v=0503";
+import {splitLayout,contextMenu} from "./layout-05.js?v=0503";
 import {SaveState} from "./save-state.js?v=043";
 import {importFBX} from "./mesh-importer.js?v=042";
-import {SCRATCH,createScratch,demoOBJ,MemoryStore} from "./scratch.js?v=0501";
+import {SCRATCH,createScratch,demoOBJ,MemoryStore} from "./scratch.js?v=0503";
 import {YandexDisk,tokenFromInput,snapshotName,encodeSnapshot,decodeSnapshot,validateSnapshot,captureWorkspace,replaceWorkspace} from "./cloud.js?v=041";
 const $=id=>document.getElementById(id), status=t=>$("status").textContent=t;
 import {getTooltipPreference,setTooltipPreference,installTooltips} from "./tooltips.js?v=022";
 let ws,scratch=null,free=false,projectId=null,tab="toolbox",frames=new Map(),busy=false,saveState=null,leaving=false,savingExplicit=false,openedTools=new Set(),cameras=new Map(),libraryScope="asset",libraryUrls=[],libraryRenderId=0;
-const tools={palette:"tools/Palette_Workspace_0.3_05.html?v=0501",baker:"tools/Baker_Workspace_2.0.1_05.html?v=0501",material:"tools/Material_Workspace_0.2_05.html?v=0501"};
+const tools={palette:"tools/Palette_Workspace_0.3_05.html?v=0503",baker:"tools/Baker_Workspace_2.0.1_05.html?v=0503",material:"tools/Material_Workspace_0.2_05.html?v=0503"};
 const guard=fn=>async(...args)=>{try{await fn(...args)}catch(e){status("Ошибка: "+e.message)}};
 function btn(text,fn,active=false){let b=document.createElement("button");b.textContent=text;b.classList.toggle("active",active);b.onclick=guard(fn);return b;}
 

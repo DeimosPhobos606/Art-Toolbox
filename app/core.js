@@ -20,6 +20,28 @@ export class Workspace extends EventTarget{
  async activate(assetId){return this.transact(s=>{this.asset(s,assetId);s.active=assetId;});}
  list(assetId){return this.state.resources.filter(r=>r.assetId===assetId);}
  async put(assetId,slot,blob,opts={}){if(!(blob instanceof Blob))throw Error("Expected Blob");return this.transact((s,ops)=>{this.asset(s,assetId);let old=s.resources.find(r=>r.assetId===assetId&&r.slot===slot),r=nextResource(old,{assetId,slot,name:opts.name||slot,kind:opts.kind||"texture",meta:opts.meta||{}},id(),Date.now());s.resources=s.resources.filter(x=>x.id!==r.id);s.resources.push(r);ops.push({store:"blobs",key:r.id+":"+r.revision,value:blob});return r;});}
+
+ async removeResource(assetId,resourceId){return this.transact(async(s,ops)=>{
+  this.asset(s,assetId);let r=s.resources.find(x=>x.assetId===assetId&&x.id===resourceId);if(!r)throw Error("Ресурс не найден");
+  s.resources=s.resources.filter(x=>x.id!==r.id);for(let i=1;i<=r.revision;i++)ops.push({store:"blobs",key:r.id+":"+i,remove:true});
+  for(let tool of ["palette","baker","material"]){let key=assetId+":"+tool,session=await this.store.read("sessions",key);if(!session)continue;
+   let next=structuredClone(session),changed=false;
+   if(tool==="palette"&&next.sourceId===r.id){next.sourceId=null;changed=true;}
+   if(tool==="material"&&next.graph?.nodes){for(let n of next.graph.nodes)if(n.params?.resource===r.id){delete n.params.resource;delete n.params.resourceSlot;changed=true;}}
+   if(tool==="baker"){
+    if(r.slot==="mesh"){delete next.bakeState;next.meshRev="";next.mapEngines={};changed=true;}
+    else if(r.slot.startsWith("bake:")){let k=r.slot.slice(5);if(next.bakeState){for(let prop of ["raw","contexts","mapEngines"])if(next.bakeState[prop])delete next.bakeState[prop][k];}if(next.mapEngines)delete next.mapEngines[k];changed=true;}
+   }
+   if(changed)ops.push({store:"sessions",key,value:next});
+  }return r;
+ });}
+ async removeAsset(assetId){return this.transact((s,ops)=>{this.asset(s,assetId);this.removeAssets(s,ops,new Set([assetId]));});}
+ async removeProject(projectId){return this.transact((s,ops)=>{if(!s.projects.some(p=>p.id===projectId))throw Error("Проект не найден");this.removeAssets(s,ops,new Set(s.assets.filter(a=>a.projectId===projectId).map(a=>a.id)));s.projects=s.projects.filter(p=>p.id!==projectId);});}
+ removeAssets(s,ops,ids){
+  for(let r of s.resources.filter(r=>ids.has(r.assetId)))for(let i=1;i<=r.revision;i++)ops.push({store:"blobs",key:r.id+":"+i,remove:true});
+  for(let a of ids)for(let tool of ["palette","baker","material"])ops.push({store:"sessions",key:a+":"+tool,remove:true});
+  s.resources=s.resources.filter(r=>!ids.has(r.assetId));s.assets=s.assets.filter(a=>!ids.has(a.id));if(ids.has(s.active))s.active=s.assets[0]?.id||null;
+ }
  async get(assetId,resourceId,revision){await this.tail;let r=this.list(assetId).find(x=>x.id===resourceId);if(!r)throw Error("Resource not found");let blob=await this.store.read("blobs",r.id+":"+(revision||r.revision));if(!blob)throw Error("Missing resource file");return {resource:r,blob};}
  async session(assetId,tool){await this.tail;this.asset(this.state,assetId);return await this.store.read("sessions",assetId+":"+tool)||{};}
  async saveSession(assetId,tool,patch){return this.transact(async(s,ops)=>{this.asset(s,assetId);let key=assetId+":"+tool,old=await this.store.read("sessions",key)||{};ops.push({store:"sessions",key,value:{...old,...patch}});});}

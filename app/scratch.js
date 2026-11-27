@@ -1,4 +1,4 @@
-import {Workspace,empty} from "./core.js";
+import {Workspace,empty} from "./core.js?v=043";
 export const SCRATCH="__scratch__";
 export class MemoryStore{
  constructor(){this.data=new Map();}

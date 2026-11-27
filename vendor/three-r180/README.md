@@ -1,0 +1,1 @@
+Vendored Three.js r180 core, FBXLoader, NURBS and bundled fflate (MIT). FBXLoader imports the local core instead of the bare three specifier. Art Toolbox disables material image loading; no external FBX texture references are fetched. See LICENSE and FFLATE-LICENSE.

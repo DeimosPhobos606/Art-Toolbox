@@ -1,4 +1,4 @@
-import {connect,canvasBlob,fileFrom,debounceSave} from "./bridge.js?v=043";
+import {connect,canvasBlob,fileFrom,debounceSave} from "./bridge.js?v=0431";
 import {installTooltips} from "./tooltips.js?v=022";
 import {evaluate,ports,canConnect} from "./graph-02.js";
 import {createViewer} from "./viewer.js?v=042";

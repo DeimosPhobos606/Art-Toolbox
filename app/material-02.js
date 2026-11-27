@@ -1,7 +1,7 @@
 import {connect,canvasBlob,fileFrom,debounceSave} from "./bridge.js?v=021";
 import {installTooltips} from "./tooltips.js?v=022";
 import {evaluate,ports,canConnect} from "./graph-02.js";
-import {createViewer} from "./viewer.js";
+import {createViewer} from "./viewer.js?v=042";
 const $=id=>document.getElementById(id),msg=t=>$("msg").textContent=t,api=connect("material"),id=()=>crypto.randomUUID();
 let graph={version:1,nodes:[],output:null},ready=false,meshRev="",resourceList=[],runId=0,lastOK=false,timer,zoom=1,pending=null,dragWire=null;
 const viewer=createViewer($("view3d"),msg),gv=$("graphView"),board=$("board"),stage=$("stage"),WIDTH=2400,HEIGHT=1600;
